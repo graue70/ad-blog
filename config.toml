@@ -1,0 +1,53 @@
+baseurl         = "/"
+theme           = "casper-two"
+languageCode    = "en-US"
+disqusShortname = ""
+paginate        = 6
+canonifyurls    = true
+
+[params]
+  title       = "Algorithms and Data Structures"
+  subtitle    = "Musings on Computer Science"
+  copyright   = "© 2018"
+
+  cover       = "img/blog-cover.jpg"
+  description    = "Musings on Computer Science topics by the team of the Chair of Algorithms and Data Structures under Prof. Dr. Hannah Bast"
+  metaDescription = ""
+  googleAnalytics = ""
+  customCSS = []
+  RSSLink = ""
+
+  githubName = "ad-freiburg"
+
+  #logo = "hugo-logo.png"
+  orgName = "University of Freiburg"
+  orgWebsite = "https://ad.cs.uni-freiburg.de"
+  orgDescription = ""
+
+  showSupport = false
+
+  pageNotFoundTitle = "404 - Page not found"
+
+  #casper or caspertwo
+  singleViewStyle = "caspertwo"
+
+[permalinks]
+  post = "/post/:slug/"
+
+[[menu.main]]
+  name = "Home"
+  url = "/"
+  weight = 200
+
+#[[menu.main]]
+#  name = "Some Topic"
+#  url = "/tags/thetag"
+#  weight = 100
+
+[[menu.main]]
+  name = "Development"
+  url = "/categories/development/"
+  weight = 99
+
+
+

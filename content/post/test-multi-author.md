@@ -1,15 +1,16 @@
 ---
-title: "Test 0"
+title: "Test Multi Author"
 date: 2018-04-06T16:20:41+02:00
 author: "Prof. Dr. Hannah Bast"
 authorAvatar: "img/bast.jpg"
-tags: ["foo"]
+tags: ["ml", "research", "rnn"]
 categories: [
-    "golang",
+  "ml",
+  "research"
 ]
 image: "img/writing.jpg"
 draft: true
 ---
 
-Another interesting post
+Another enlightening post
 

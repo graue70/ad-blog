@@ -19,7 +19,7 @@ canonifyurls    = true
 
   githubName = "ad-freiburg"
 
-  #logo = "hugo-logo.png"
+  #logo = "img/logo.png"
   orgName = "University of Freiburg"
   orgWebsite = "https://ad.cs.uni-freiburg.de"
   orgDescription = ""
@@ -45,9 +45,14 @@ canonifyurls    = true
 #  weight = 100
 
 [[menu.main]]
-  name = "Development"
-  url = "/categories/development/"
+  name = "News"
+  url = "/categories/news/"
   weight = 99
+
+[[menu.main]]
+  name = "Research"
+  url = "/categories/research/"
+  weight = 98
 
 
 

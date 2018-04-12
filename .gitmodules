@@ -2,5 +2,5 @@
 	path = themes/hasper
 	url = git@github.com:dencold/hasper.git
 [submodule "themes/casper-two"]
-	path = themes/casper-two
+	path = themes/ad-blog-theme
 	url = https://github.com/eueung/hugo-casper-two.git

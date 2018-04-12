@@ -63,10 +63,11 @@ Previewing
 To preview the site run the following `hugo` command which executes an embedded
 webserver and change watcher
 
-    hugo serve -D
+    hugo serve -D --bind "0.0.0.0"
 
 The `-D` option turns on rendering of draft posts i.e. those whith `draft:
-true` in the front matter metadata section
+true` in the front matter metadata section. The `--bind` option is only needed
+if you are working on a remote system but would like to view locally.
 
 Building the Site
 -----------------

@@ -1,6 +1,3 @@
-[submodule "themes/hasper"]
-	path = themes/hasper
-	url = git@github.com:dencold/hasper.git
-[submodule "themes/casper-two"]
+[submodule "themes/ad-blog-theme"]
 	path = themes/ad-blog-theme
-	url = https://github.com/eueung/hugo-casper-two.git
+	url = https://ad-git.informatik.uni-freiburg.de/ad/ad-blog-theme

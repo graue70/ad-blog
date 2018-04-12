@@ -7,6 +7,15 @@ theme](https://ad-git.informatik.uni-freiburg.de/ad/ad-blog-theme).
 
 Getting Started
 ---------------
+Clone the repository **Note** that this project uses *git submodule*s and thus
+needs to be cloned with
+
+    git clone --recursive git@ad-git.informatik.uni-freiburg.de:ad/ad-blog.git
+
+Alternatively if you already cloned without `--recursive` you can do an initial
+checkout of the submodule with
+
+    git submodule update --init --recursive
 
 ## Prerequisites
 To preview and/or update the blog you currently need the hugo static site

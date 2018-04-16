@@ -11,7 +11,7 @@ canonifyurls    = true
   copyright   = "© 2018"
 
   cover       = "img/unibib.jpg"
-  description    = "Musings on Computer Science topics by the team of the Chair of Algorithms and Data Structures under Prof. Dr. Hannah Bast"
+  description    = "Musings on Computer Science Topics by the Team of the Chair of Algorithms and Data Structures under Prof. Dr. Hannah Bast"
   metaDescription = ""
   googleAnalytics = ""
   customCSS = []

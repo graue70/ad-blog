@@ -83,4 +83,4 @@ Deploying
 ---------
 To deploy `rsync` the public folder to your web root
 
-    rsync -avuz public/ server:/<web-root>/
+    ./deploy.sh

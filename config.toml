@@ -44,10 +44,10 @@ canonifyurls    = true
 #  url = "/tags/thetag"
 #  weight = 100
 
-[[menu.main]]
-  name = "News"
-  url = "/categories/news/"
-  weight = 99
+#[[menu.main]]
+#  name = "News"
+#  url = "/categories/news/"
+#  weight = 99
 
 [[menu.main]]
   name = "Research"

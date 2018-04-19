@@ -8,7 +8,7 @@ categories: [
     "News"
 ]
 image: img/welcome.jpg
-draft: true
+draft: false
 ---
 This is the part that gets used as the snippet
 <!--more-->

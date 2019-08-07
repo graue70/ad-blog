@@ -1,6 +1,9 @@
 AD Blog
 =======
-This is the source repository of the [AD Blog](https://ad-blog.informatik.uni-freiburg.de)
+This is the source repository of the [AD
+Blog](https://ad-blog.informatik.uni-freiburg.de). Which stores all content
+including posts and static files such as images. Therefore all posts to the
+blog should be added to this repository.
 
 The blog uses the [hugo](https://gohugo.io) site generator and our [custom
 theme](https://ad-git.informatik.uni-freiburg.de/ad/ad-blog-theme).
@@ -9,14 +12,15 @@ theme](https://ad-git.informatik.uni-freiburg.de/ad/ad-blog-theme).
 Clone the repository **Note** that this project uses *git submodule*s and thus
 needs to be cloned with
 
-    git clone --recursive git@ad-git.informatik.uni-freiburg.de:ad/ad-blog.git
+    git clone --recursive https://ad-git.informatik.uni-freiburg.de/ad/ad-blog.git
+    cd ad-blog
 
 ### Getting hugo
-To preview and/or update the blog you currently need the `hugo` static site
-generator.
+To preview and/or update and post to the blog you currently need the `hugo`
+static site generator.
 
-If you have `sudo` access on the system where you write posts, we recommend
-installing with the package manager, for example on Ubuntu use
+If you have `sudo` access on the system and it is at least an Ubuntu 18.04, we
+recommend installing with the package manager, for example
 
     sudo apt install hugo
 
@@ -33,17 +37,18 @@ Also note this matches the `hugo` version from the Ubuntu 18.04 repository.
     # Test the binary with the version command. Remember you must prepend "./"
     ./hugo version
 
-
 ## Creating a Post
+
 To create a new post first run the following `hugo` command that creates
-a skeleton post.
+a skeleton post under `content/post/my-awesome-title.md` to be edited with your
+text editor of choice.
 
     hugo new post/my-awesome-title.md
 
 It then tells you which file it created. This file can now be filled with all
 your awesome content ✍️
 
-The skeleton contains a YAML metadata in the following format
+The skeleton contains YAML formatted metadata with the following fields:
 
     ---
     title: "My Awesome Title"
@@ -56,12 +61,14 @@ The skeleton contains a YAML metadata in the following format
     draft: true
     ---
 
-which should be customized to the post and author.
+Thish should be customized to the post and author.
 
 After this (in the same file) you should append your summary and content
 
     Summary goes here
+
     <!--more-->
+
     Content goes here
 
 You can then preview your new post using the web server built into `hugo`. With

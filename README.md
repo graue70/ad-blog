@@ -40,15 +40,18 @@ Also note this matches the `hugo` version from the Ubuntu 18.04 repository.
 ## Creating a Post
 
 To create a new post first run the following `hugo` command that creates
-a skeleton post under `content/post/my-awesome-title.md` to be edited with your
-text editor of choice.
+a skeleton post to be edited with your favorite text editor. Contrary to what
+the command suggests the post is created at `content/post/my-awesome-title.md`
+which is because **everything that is considered content lives under
+`content/`**.
 
     hugo new post/my-awesome-title.md
 
 It then tells you which file it created. This file can now be filled with all
 your awesome content ✍️
 
-The skeleton contains YAML formatted metadata with the following fields:
+The skeleton contains YAML formatted metadata with the following fields. Below
+that you will add Markdown formatted content (the Post).
 
     ---
     title: "My Awesome Title"
@@ -63,13 +66,15 @@ The skeleton contains YAML formatted metadata with the following fields:
 
 Thish should be customized to the post and author.
 
-After this (in the same file) you should append your summary and content
+After this (in the same file) you can now append your summary and content using
+Markdown format.
 
     Summary goes here
 
     <!--more-->
 
-    Content goes here
+    Content goes here. This uses Markdown in the
+    [Blackfriday](https://github.com/russross/blackfriday) variant
 
 You can then preview your new post using the web server built into `hugo`. With
 the following command

@@ -6,7 +6,7 @@ authorAvatar: "img/project_tokenization_repair/hertel.png"
 tags: ["ml", "nlp", "rnn", "tokenization", "spelling"]
 categories: ["project"]
 image: "img/project_tokenization_repair/header.png"
-draft: true
+draft: false
 ---
 Common errors in written text are split words ("algo rithm") and run-on-words ("runsin").
 I use Character-based Neural Language Models to fix such errors in order to enable further processing of misspelled texts.

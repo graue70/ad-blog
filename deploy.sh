@@ -1,3 +1,7 @@
 #!/bin/bash
-hugo
-rsync -avuz public/ elba.informatik.uni-freiburg.de:/var/www/ad-blog/
+if [[ -f "./hugo" ]]; then
+	./hugo
+else
+	hugo
+fi
+rsync -avuz public/ ad-blog.informatik.uni-freiburg.de:/var/www/ad-blog/

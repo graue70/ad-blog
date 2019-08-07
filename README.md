@@ -12,19 +12,28 @@ needs to be cloned with
 
     git clone --recursive git@ad-git.informatik.uni-freiburg.de:ad/ad-blog.git
 
-Alternatively if you already cloned without `--recursive` you can do an initial
-checkout of the submodule with
+## Getting hugo
+To preview and/or update the blog you currently need the `hugo` static site
+generator.
 
-    git submodule update --init --recursive
+If you have `sudo` access on the system where you write posts, we recommend
+installing with the package manager, for example on Ubuntu use
 
-## Prerequisites
-To preview and/or update the blog you currently need the hugo static site
-generator. As this is a single binary
-[installation](https://gohugo.io/getting-started/installing) is as simple as
-copying the correct [binary](https://github.com/gohugoio/hugo/releases)
-somewhere in your path. So as not to pollute your system paths we recommend to
-create a `~/bin` directory and adding this to your `$PATH` variable in the
-`~/.profile` or `~/.zshenv`.
+    sudo apt install hugo
+
+Otherwise you can download
+a [binary](https://github.com/gohugoio/hugo/releases) for your system and use
+it locally or add it to your `$PATH`.
+
+To download just the `hugo` binary on an Intel/AMD Linux system you can use the
+following commands. To use the downloaded binary you **must** use `./hugo`
+instead of `hugo` in all later commands or make it available on your `$PATH`.
+Also note this matches the `hugo` version from the Ubuntu 18.04 repository.
+
+    wget -O - 'https://github.com/gohugoio/hugo/releases/download/v0.40.1/hugo_0.40.1_Linux-64bit.tar.gz' | tar -xvz hugo
+    # Test the binary with the version command. Remember you must prepend "./"
+    ./hugo version
+
 
 ## Creating a Post
 To create a new post first run the following `hugo` command that creates
@@ -35,7 +44,7 @@ a skeleton post.
 It then tells you which file it created. This file can now be filled with all
 your awesome content ✍️
 
-The skeleton contains a YAML front matter metadata header like
+The skeleton contains a YAML metadata in the following format
 
     ---
     title: "My Awesome Title"
@@ -48,17 +57,47 @@ The skeleton contains a YAML front matter metadata header like
     draft: true
     ---
 
-which should be customized to the post and author
+which should be customized to the post and author.
 
-After this you should add your summary and content
+After this (in the same file) you should append your summary and content
 
     Summary goes here
     <!--more-->
     Content goes here
 
+You can then preview your new post using the web server built into `hugo`. With
+the following command
+
+    hugo serve -D --bind "::" --baseURL $(hostname -f)
+
+Here `-D` enables showing of `draft: true` posts and the `--bind` and
+`--baseURL` parts ensure that the server is accessible from the web. These can
+be left away when viewing on the same computer.
+
+The above preview only generates the site in-memory, to generate the static
+HTML run the following command
+
+    hugo -D
+
+Again, adding `-D` also generates draft posts. The HTML pages for the site are
+stored in the `./public` folder. If you're happy with your post you should
+change the `draft` metadata to false.
+
+Finally, (if you have the necessary permissions) you can deploy the new version
+of the blog with.
+
+    ./deploy.sh
+
+This is just an easier way of executing the followig commands
+
+    hugo
+    rsync -avuz public/ ad-blog.informatik.uni-freiburg.de:/var/www/ad-blog/
+
 ### Adding Mathematical Formulæ
 For adding math [MathJAX](https://www.mathjax.org) has been added and
-preconfigured for the use with LaTeX. For an example refer to the 
+preconfigured for the use with LaTeX. To render a formular simply add it inline
+in a post using double `&` for example `$$x_{1,2} = \frac{-b \pm \sqrt{b^s
+-4ac}}{2a}$$`.
 
 ### Adding Static Content
 Static content can be added to the `static/` folder, it is automatically synced
@@ -70,30 +109,3 @@ the syntax (TOML) may change to match the post metadata (YAML)
 
 ## Changing the About Page
 The about page is editable through the `content/about.md` file
-
-Previewing
-----------
-To preview the site run the following `hugo` command which executes an embedded
-webserver and change watcher
-
-    hugo serve -D --bind "::" --baseURL $(hostname -f)
-
-The `-D` option turns on rendering of draft posts i.e. those whith `draft:
-true` in the front matter metadata section. The `--bind` and `--baseURL`
-options are only needed if you are working on a remote system but would like to
-view locally.
-
-Building the Site
------------------
-The above preview only generates the site in-memory, to generate the static
-HTML run the following command
-
-    hugo
-
-Again, adding `-D` also generates draft posts.
-
-Deploying
----------
-To deploy `rsync` the public folder to your web root
-
-    ./deploy.sh

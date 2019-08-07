@@ -5,14 +5,13 @@ This is the source repository of the [AD Blog](https://ad-blog.informatik.uni-fr
 The blog uses the [hugo](https://gohugo.io) site generator and our [custom
 theme](https://ad-git.informatik.uni-freiburg.de/ad/ad-blog-theme).
 
-Getting Started
----------------
+## Getting Started
 Clone the repository **Note** that this project uses *git submodule*s and thus
 needs to be cloned with
 
     git clone --recursive git@ad-git.informatik.uni-freiburg.de:ad/ad-blog.git
 
-## Getting hugo
+### Getting hugo
 To preview and/or update the blog you currently need the `hugo` static site
 generator.
 
@@ -71,8 +70,8 @@ the following command
     hugo serve -D --bind "::" --baseURL $(hostname -f)
 
 Here `-D` enables showing of `draft: true` posts and the `--bind` and
-`--baseURL` parts ensure that the server is accessible from the web. These can
-be left away when viewing on the same computer.
+`--baseURL` parts ensure that the server is accessible from other systems.
+These can be left away when viewing on the same computer.
 
 The above preview only generates the site in-memory, to generate the static
 HTML run the following command

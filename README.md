@@ -99,9 +99,12 @@ of the blog with.
 
     ./deploy.sh
 
-This is just an easier way of executing the followig commands
+This is just an easier way of executing the following commands (where `chmod`
+makes ensures other users in the correct group will be able to apply further
+updates).
 
     hugo
+    chmod -R ug+rwX public/
     rsync -avuz public/ ad-blog.informatik.uni-freiburg.de:/var/www/ad-blog/
 
 ### Adding Mathematical Formulæ

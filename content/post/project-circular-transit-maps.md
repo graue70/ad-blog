@@ -5,8 +5,8 @@ author: "Jonathan Hauser"
 authorAvatar: "img/ada.jpg"
 tags: ["transitmaps"]
 categories: ["project"]
-image: "img/project_circular_transit_maps/freiburg_converted.png"
-draft: true
+image: "img/project_circular_transit_maps/freiburg_converted_thick.png"
+draft: false
 ---
 Transit Maps can be found in many places. By replacing the actual road geometry with a simpler geometry like arcs the result not only
 becomes more aesthetically pleasing but also more readable. Nonetheless, the original road layout shouldn't be left completely unconsidered

@@ -25,6 +25,7 @@ to avoid confusion when reading the map.
 # <a id="introduction"></a> Introduction
 Transit Maps can be found in many places. They typically reassemble the actual road network. When reading a transit map the primary information that someone wants to retrieve is which station is connected to which and what is the best route from a station to another one.
 To retrieve this the actual geometry of the road network is not needed and makes the real information harder to process. Replacing the actual road geometry with a simpler geometry like circles can overcome this problem. The generated map should still reassemble the original layout as it might lead to confusion otherwise. The goal, therefore, is to simplify the map while staying as close to the original as desired.
+This work is based on <a href="https://sites.google.com/site/schematicmapping/Dijk-Circular.pdf">An Automated Method for Circular-Arc Metro Maps. by van Dijk et al.</a>
 
 # <a id="preparation"></a> Preparation
 The tool that generates these circular transit maps reads the original transit maps in the GeoJSON format which is quite common for transit map representation and is also used by other tools of the chair.

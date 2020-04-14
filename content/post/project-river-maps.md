@@ -6,22 +6,48 @@ authorAvatar: "img/ada.jpg"
 tags: ["OSM", "LOOM", "River Maps"]
 categories: ["project"]
 image: "img/project_river_maps/transitmap.png"
-draft: true
+draft: false
 ---
-In this project, we extract the waterway system from OpenStreetMap data and render it into a more visual way. We use the tool LOOM to display the relationships between waterways, so that it is clear which river consists of which tributaries. 
+In this project, we extract the waterway system from OpenStreetMap data and render it into a visualized way. We use the tool LOOM to display the relationship between waterways, so that one can observe the tributaries of the rivers clearly. 
 <!--more-->
 
 # Content
-- <a href="#goal">Goal</a>
+- <a href="#introduction">Introduction</a>
 - <a href="#codestructure">Code structure</a>
 	- <a href="#container">Container</a>
 	- <a href="#methods">Methods</a>	
 - <a href="#possibleproblems">Possible Problems</a>
 - <a href="#futureworks">Furture Works</a>
 
-# <a id="goal"></a>Goal
+# <a id="introduction"></a>Introduction
 We want to use our tool [LOOM](http://loom.cs.uni-freiburg.de/#stuttgart) to render maps of rivers from [OSM](https://www.openstreetmap.org/#map=12/49.4851/8.4594) data. In the meantime, each river segment should consist of all rivers that contributed to this river so far, for example, beginning at Mannheim, the Neckar should be part of the segment that makes up the Rhine. In the end, each river will look like a single subway line starting at the source of the river, and the Rhine, for example, will look like dozens of small subway lines next to each other.
 
+Here is an example illustrating this project. We have a screenshot of a map, which is an area in Hamburg. We can observe the river Elbe and other small rivers in the map, but unfortunately it is not recognizable which river consists of which tributaries. 
+
+
+<table style="text-align:center; margin: 0px;">
+  <tbody style="display:table;">
+    <tr>
+      <td><img src="/img/project_river_maps/HamburgOriginal.jpg" style="width:500px;height:346px;text-align:center;margin: 0px;"/></td>
+    </tr>
+    <tr>
+      <td>Hamburg (original)</td>
+    </tr>
+  </tbody>
+</table>
+
+Now we have the result of our project expressed by LOOM of the same area. As we can see, only the information of the river system is showed on the picture, which is more straight forward to the observers. Besides, the rivers and their tributaries are represented clearly. 
+
+<table style="text-align:center; margin: 0px;">
+  <tbody style="display:table;">
+    <tr>
+      <td><img src="/img/project_river_maps/HamburgRendered.jpg" style="width:500px;height:350px;text-align:center;margin: 0px;"/></td>
+    </tr>
+    <tr>
+      <td>Hamburg (rendered)</td>
+    </tr>
+  </tbody>
+</table>
 
 # <a id="codestructure"></a>Code structure
 

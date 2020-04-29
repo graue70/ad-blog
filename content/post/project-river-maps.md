@@ -8,7 +8,8 @@ categories: ["project"]
 image: "img/project_river_maps/transitmap.png"
 draft: false
 ---
-In this project, we extract the waterway system from OpenStreetMap data and render it into a visualized way. We use the tool LOOM to display the relationship between waterways, so that one can observe the tributaries of the rivers clearly. 
+In this project, we extract the waterway system from OpenStreetMap data and render it into a way which makes it possible to track the river tributaries. We use the tool LOOM to display the relationship between waterways.
+
 <!--more-->
 
 # Content
@@ -20,7 +21,8 @@ In this project, we extract the waterway system from OpenStreetMap data and rend
 - <a href="#futureworks">Furture Works</a>
 
 # <a id="introduction"></a>Introduction
-We want to use our tool [LOOM](http://loom.cs.uni-freiburg.de/#stuttgart) to render maps of rivers from [OSM](https://www.openstreetmap.org/#map=12/49.4851/8.4594) data. In the meantime, each river segment should consist of all rivers that contributed to this river so far, for example, beginning at Mannheim, the Neckar should be part of the segment that makes up the Rhine. In the end, each river will look like a single subway line starting at the source of the river, and the Rhine, for example, will look like dozens of small subway lines next to each other.
+
+This project extracts the information of the rivers from [OSM](https://www.openstreetmap.org/#map=12/49.4851/8.4594) data and interprets the river system into a more graphic way. More precisely, the tributaries per edge segment are regarded as lines. In the meantime, each river segment is labeled with all the tributaries so far, for example, beginning at Mannheim, the Neckar should be part of the segment that makes up the Rhine. In the end, each river will look like a single subway line starting at the source of the river, and the Rhine, for example, will look like dozens of small subway lines next to each other. We use our tool [LOOM](http://loom.cs.uni-freiburg.de/#stuttgart), which renders line graphs in a metro-map style, to present the result in the above described way. 
 
 Here is an example illustrating this project. We have a screenshot of a map, which is an area in Hamburg. We can observe the river Elbe and other small rivers in the map, but unfortunately it is not recognizable which river consists of which tributaries. 
 

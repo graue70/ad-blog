@@ -6,13 +6,13 @@ including posts and static files such as images. Therefore all posts to the
 blog should be added to this repository.
 
 The blog uses the [hugo](https://gohugo.io) site generator and our [custom
-theme](https://ad-git.informatik.uni-freiburg.de/ad/ad-blog-theme).
+theme](https://github.com/ad-freiburg/ad-blog-tje,e).
 
 ## Getting Started
 Clone the repository **Note** that this project uses *git submodule*s and thus
 needs to be cloned with
 
-    git clone --recursive https://ad-git.informatik.uni-freiburg.de/ad/ad-blog.git
+    git clone --recursive https://github.com/ad-freiburg/ad-blog
     cd ad-blog
 
 ### Getting hugo

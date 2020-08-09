@@ -75,7 +75,7 @@ After having experimented with threshold \\(k\\), we set it to \\(k := 9\\). Fin
 
 This way, we remove 5 % of articles from the base selection, mostly consisting of outdated versions that resulted from minor article revisions, e.g., word insertions or corrections of numbers.
 
-As an example, here are two versions of an article. Our procedure correctly identifies the first one as a near duplicate of the second one. Differences are highlighted in red; skipped passages are identical.
+As an example, here are two versions of an article. Our procedure correctly identifies the first one as a near duplicate of the second one. Passages that only occur in the respective document but not the other are highlighted in red; skipped passages are identical.
 
 <table>
 <tr>

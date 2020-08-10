@@ -13,7 +13,7 @@ We present POLUSA, a dataset of 0.9M online news articles covering policy topics
 
 <!--more-->
 
-*This article is based on our [poster presented at JCDL'20](https://arxiv.org/abs/2005.14024).*
+*This article is based on our [poster presented at JCDL'20](https://doi.org/10.1145/3383583.3398567).*
 
 # Contents
 
@@ -59,11 +59,23 @@ Since CCNA lacks data for various timeframes and news outlets, we need to select
 
 ## <a id="near-duplicate-detection"></a> Near-Duplicate Detection
 
-As a second step, we remove near-duplicates using nearest neighbor clustering of articles’ [simhashes](http://portal.acm.org/citation.cfm?doid=1242572.1242592). More precisely, we first hash all token-level tri-grams for each article. Then, we compute a simhash of the resulting vector of hashes. For each outlet, we cluster the articles as follows. We assign two articles to the same cluster if their simhashes differ by at most \\(c\\) bits. After having experimented with threshold \\(c\\), we set it to \\(c := 9\\). Finally, we remove all but the newest article for each cluster.
+As a second step, we remove near-duplicates. For each article, we first hash all token-level tri-grams. Then, we compute a [simhash](http://portal.acm.org/citation.cfm?doid=1242572.1242592) of the resulting vector of hashes. For each outlet, we cluster the obtained simhashes using a simple greedy algorithm:
 
-This way, we remove 5 % articles from the base selection, mostly consisting of outdated versions that resulted from minor article revisions, e.g., word insertions or corrections of numbers.
+For a given outlet, let \\(A\\) be the set of all articles published by that outlet. Further, let \\(d(a, b)\\) be the number of bits by which the simhashes of articles \\(a, b \in A\\) differ. For some threshold \\(k\\), define
 
-As an example, here are two versions of an article. Our procedure correctly identifies the left one as a near duplicate of the right one. Differences are highlighted in red; skipped passages are identical.
+$$S\_k(a) = \\{ b \in A \;|\; d(a, b) \leq k\\}$$
+
+to be the near-duplicates of \\(a\\) and
+
+$$S\_k = \bigcup\_{a \in A, \\\\ |S\_k(a)| > 1} S\_k(a)$$
+
+the set of articles having at least one near-duplicate. As long as \\(S\_k \neq \emptyset\\), iteratively pick some \\(a \in S\_k\\) and extract a new cluster \\(C\_k(a) = S\_k \cap S\_k(a)\\) from \\(S\_k\\), followed by assigning \\(S\_k \leftarrow S\_k - C\_k(a)\\).
+
+After having experimented with threshold \\(k\\), we set it to \\(k := 9\\). Finally, we remove all but the newest article for each cluster.
+
+This way, we remove 5 % of articles from the base selection, mostly consisting of outdated versions that resulted from minor article revisions, e.g., word insertions or corrections of numbers.
+
+As an example, here are two versions of an article. Our procedure correctly identifies the first one as a near duplicate of the second one. Passages that only occur in the respective document but not the other are highlighted in red; skipped passages are identical.
 
 <table>
 <tr>

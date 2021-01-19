@@ -43,14 +43,14 @@ The task of identifying the text span of named entities in a given text is calle
 This project uses Wikidata as the target knowledge base and aims to improve the speed and correctness of NER and NED. The recognition process is speed up by POS-Tag filtering and a pre-generated entity index. The correctness is improved by utilizing the attributes in Wikidata, the abstracts in Wikipedia and adopting context-aware weighting. Finally, we generate a benchmark based on CoNLL-2003 and aida-yago2-dataset. A configurable framework is designed to observe the effectiveness of each part of the algorithm. A web interface is also developed to demonstrate the NER+NED engine as well as the evaluation results.
 
 # Named Entity Recognition (NER) {#ner}
-The task of named entity recognition (NER) is to locate the named entities in a given text. It is sometimes similar to Part-of-speech (POS) tagging, which is the process of determining the grammatical category of each word in the sentence. Examples of POS-tagging are shown below, with `tag` indicating the POS-tag of each word. For the complete list of tags and the meanings, see the [Penn Treebank list]("https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html").
+The task of named entity recognition (NER) is to locate the named entities in a given text. It is sometimes similar to Part-of-speech (POS) tagging, which is the process of determining the grammatical category of each word in the sentence. Examples of POS-tagging are shown below, with `tag` indicating the POS-tag of each word. For the complete list of tags and the meanings, see the [Penn Treebank list](https://www.ling.upenn.edu/courses/Fall_2003/ling001/penn_treebank_pos.html).
 
 - **Obama**`NNP` was`VBD` the`DT` president`NN` of`IN` **USA**`NNP`.
 - **Obama**`NNP` was`VBD` the`DT` president`NN` of`IN` **United**`NNP` **States**`NNP` **of**`IN` **America**`NNP`.
 
 In the first sentence, all of the named entities can be easily recognized by POS-tagging, as they all have the `NNP` tag. However, doing NER by POS-tagging only works when all of the words in a named entity are `NNP`. In the second sentence, "United States of America" cannot perfectly recognized by POS-tags as "of" is not an `NNP`.
 
-In order to recognize more named entities, especially those cannot be fully detected by POS-tagging, the ultimate way is to compare each word and its subsequences in the query sentence with the knowledge base. This process could be very time-consuming as it has an order   \\(O\\)(\\(\mathit{k^2}\\)) given a text of length \\(\mathit{k}\\). Fortunately, improvements can be made in the following points.
+In order to recognize more named entities, especially those cannot be fully detected by POS-tagging, the ultimate way is to compare each word and its subsequences in the query sentence with the knowledge base. This process could be very time-consuming as it has an order \\(O(k^2)\\) given a text of length \\(k\\). Fortunately, improvements can be made in the following points.
 
 ### POS-Tag Filter {#postag}
 
@@ -59,9 +59,9 @@ The first improvement is to use the POS-tag as a filter: Only compare a word and
 
 Since most of the words in the query sentence are not named entities, e.g. "was", "the", which can be roughly indicated by their POS-tags, there is no need to further examine these words and their subsequences in the knowledge base. Therefore, by utilizing the POS-tag as a filter, the amount of words needed to do further examination can be largely reduced to a linear scale  \\(O\\)(\\(k\\)) .
 
-In this project, we use [spaCy](https://spacy.io) as our POS-tagger, as it is one of the stat-of-the-art tagger and performs fast. Let \\(\mathit{w_p}\\) denotes the word at the position \\(\mathit{p}\\) of the query, \\(\verb|tag|(\mathit{w_p})\\) denotes the POS-tag of \\(\mathit{w_p}\\). The filter works as follows:
+In this project, we use [spaCy](https://spacy.io) as our POS-tagger, as it is one of the stat-of-the-art tagger and performs fast. Let \\(w_p\\) denotes the word at the position \\(p\\) of the query, \\(\verb|tag|(w_p)\\) denotes the POS-tag of \\(w_p\\). The filter works as follows:
 
-1. For the word \\(\mathit{w_p}\\), check \\(\verb|tag|(\mathit{w_p})\\) and \\(\verb|tag|(\mathit{w_{p+1}})\\).
+1. For the word \\(w_p\\), check \\(\verb|tag|(w_p)\\) and \\(\verb|tag|(w\_{p+1})\\).
 1. If both are not `NNP` or `NN`, skip further comparison.
 
 Note that not only the tag of the current word but also the tag of the next word are checked. This is to prevent false-filtering. Consider named entities like “My Chemical Romance” (an American punk band) or “My Neighbor Totoro” (a Japanese anime film), both of them have POS-tags of the form {`PRP$`, `NNP`, `NNP`}. If we only check the current word’s tag in the filter, these entities will be skipped and cannot be detected.
@@ -116,12 +116,12 @@ Consider a toy knowledge base with only three items, the pre-established entity 
 ### Recognition Process {#recognition}
 With the help of POS-tag filter and entity index, the entire recognition process is as follows:
 
-1. For each word \\(\mathit{w_p}\\) in the query, check it with the POS-tag filter. If it is not likely to be a named entity, skip further recognition. The next word to be checked: \\(\mathit{w_{p+1}}\\).
+1. For each word \\(w_p\\) in the query, check it with the POS-tag filter. If it is not likely to be a named entity, skip further recognition. The next word to be checked: \\(w\_{p+1}\\).
 
-2. For a suspicious word, let \\(\verb|chunk|(\mathit{p,l})\\) denotes a \\(l\\)-word phrase starting from the word \\(\mathit{w_p}\\) in the query.
-    1. Lookup the entity index with the key \\(\mathit{w_p}\\), get all possible lengths \\(L\\) and corresponding entities \\(E_{l}\\), for all \\(l \in L\\).
-    1. Check \\(\verb|chunk|(\mathit{p,l})\\) in the query for all possible \\(l \in L\\). If \\(\verb|chunk|(\mathit{p,l}) \in E_{l} \\), a named entity is found.
-    1. Return the named entity with the longest length \\(\hat{l}\\) and its possible QIDs. The next word to be checked: \\(\mathit{w_{p+\hat{l}}}\\).
+2. For a suspicious word, let \\(\verb|chunk|(p,l)\\) denotes a \\(l\\)-word phrase starting from the word \\(w_p\\) in the query.
+    1. Lookup the entity index with the key \\(w_p\\), get all possible lengths \\(L\\) and corresponding entities \\(E_l\\), for all \\(l \in L\\).
+    1. Check \\(\verb|chunk|(p,l)\\) in the query for all possible \\(l \in L\\). If \\(\verb|chunk|(p,l) \in E_l \\), a named entity is found.
+    1. Return the named entity with the longest length \\(\hat{l}\\) and its possible QIDs. The next word to be checked: \\(w\_{p+\hat{l}}\\).
 
 
 # Named Entity Disambiguation (NED) {#ned}
@@ -137,8 +137,9 @@ To measure the relevance, the idea is to look at the overlaps between the contex
 | Obama was the president of United States of America. | Obama, president, United, States, America |
 | Obama is a city in Japan. | Obama, city, Japan |
 
+
 | QID | Entity Name | Synonyms | Description | Content |
-| ---- | ---- | ---- | ---- | ---- | ---- |
+| ---- | ---- | ---- | ---- | ---- |
 | Q76 | Barack Obama | Obama | 44th president of the United States | Barack, Obama, 44th, president, of, the, United, States |
 | Q41773 | Obama | | city in Fukui prefecture, Japan | Obama, city, in, Fukui, prefecture, Japan |
 
@@ -156,7 +157,7 @@ The example is well designed to demonstrate the concept. In real cases, there co
 ### Disambiguation Process {#disambiguation}
 
 For a recognized named entity, given all its possible candidates, disambiguate by choosing the candidate with the highest score, where
-$$\verb|score \= popularity score \+ relevance score|$$
+$$\verb|score = popularity score \+ relevance score|$$
 The popularity score comes from the entity's property *sitelinks* in Wikidata. It is an integer in the range from 0 to 367. A higher number of sitelinks indicates a more popular entity. The relevance score is computed by the number of overlaps times a weight. The weight is chosen such that about 2 to 3 overlaps can beat a very popular item. It is default to 200. In a longer query, the context may contain more words but be less representative. Therefore, if there are more than 10 words in the context, decrease the weight to 150.
 
 Similarly, the weight should also be proportional to the description length. However, the description in Wikidata tend to be short: 96% of the description are less than 10 words. In this case, a fixed weight is sufficient. Note that the behavior changes when we later introduce the [Wikipedia abstract](#wikipedia).

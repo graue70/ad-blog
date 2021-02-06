@@ -1,5 +1,5 @@
 ---
-title: "Aqqu New"
+title: "Aqqu-New"
 date: 2021-02-05T15:23:47+01:00
 author: "Thomas Goette"
 authorAvatar: "img/project_aqqu-new/avatar.png"
@@ -9,33 +9,40 @@ image: "img/writing.jpg"
 draft: true
 ---
 
-Aqqu translates a given question into a sparql query and uses a sparql backend to get the answer to the question. Where the original aqqu used freebase as a backend and many additional external sources, this complete re-write uses data from wikidata exclusively.
+Aqqu translates a given question into a sparql query and uses a sparql backend to get the answer to the question. While the original Aqqu used freebase as a backend and many additional external sources, this complete re-write uses data from wikidata exclusively.
 
 <!--more-->
 
 ## Content
 
 1. <a href="#introduction">Introduction</a>
+1. <a href="#requirements">Requirements</a>
 1. <a href="#pre-processing">Pre-processing</a>
 1. <a href="#pipeline">Steps in the Pipeline</a>
+1. <a href="#api-docs">API documentation</a>
+1. <a href="#evaluation-frontend">Evaluation frontend</a>
+1. <a href="#evaluation">Evaluation</a>
+1. <a href="#improvements">Possible improvements</a>
 
 ## <a id="#introduction"></a> Introduction
 
 While the original Aqqu as published in [this paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) and later improved by the chair still accomplishes impressive results, it has several drawbacks:
 
 1. Its logic relies heavily on data from freebase which has not been updated for more than four years (it was shut down on 2 May 2016).
-1. The code is heavily dependent on freebase.
+1. The code relies on several external data sources like clueweb and GoogleNews, which require manual updating.
 1. The code has been updated, added to and partly refactored for more than five years, leading to partly unstructured and hard-to-read code.
 
 These drawbacks led to this project, namely rewriting the entire software and basing it on freebase's successor [wikidata](https://www.wikidata.org/) instead.
 
-## Requirements
+Note that even though it is indeed a rewrite, major parts of the logic and some parts of the implementation were taken directly from the original Aqqu version.
 
-Aqqu-new needs a way to get results for sparql queries. For now, it requires a working qlever backend (both for the pre-processing and the actual pipeline).
+## <a id="#requirements"></a> Requirements
+
+Aqqu-New needs a way to get results for sparql queries. For now, it requires a working qlever backend (both for the pre-processing and the actual pipeline).
 
 ## <a id="#pre-processing"></a> Pre-processing
 
-Before Aqqu-new can run, some pre-processing steps need to be done. If we would not do these, Aqqu-new would have to send sparql queries to its backend very frequently leading to longer query times.
+Before Aqqu-New can run, some pre-processing steps need to be done. If we would not do these, Aqqu-New would have to send sparql queries to its backend very frequently leading to longer query times.
 
 ### 1. Acquire data
 
@@ -43,13 +50,13 @@ First, we need to acquire some data about entities and relations. For that, we s
 
 ### 2. Build indices
 
-We could read the acquired data into memory whenever we load Aqqu-new. However, this would lead to load times of several minutes which slows down development a lot. Therefore, we use [rocksdb](https://rocksdb.org/) as a database to create an entity index and a relation index on the hard drive that Aqqu-new can use. This makes it possible to have a near-instant load time while still keeping the query time for the data low.
+We could read the acquired data into memory whenever we load Aqqu-New. However, this would lead to load times of several minutes which slows down development a lot. Therefore, we use [rocksdb](https://rocksdb.org/) as a database to create an entity index and a relation index on the hard drive that Aqqu-New can use. This makes it possible to have a near-instant load time while still keeping the query time for the data low.
 
 ## <a id="#pipeline"></a> Steps in the Pipeline
 
-Aqqu-new consists of several steps combining into a pipeline.
+Aqqu-New consists of several steps combining into a pipeline.
 
-We run the pipeline with the question `Who designed Scrabble?`.
+As an example, we run the pipeline with the question `Who designed Scrabble?`.
 
 ### 1. Tokenizer
 
@@ -78,15 +85,15 @@ In this case, let's look at the candidate `Q170436-P287-?0` (incidentally, this 
 - has designer
 - designer
 
-The token `Scrabble` from the question has been matched to the entity `Q170436` for this candidate. That leaves off the tokens `[Who, designed, ?]`. We now compare these tokens with the aliases from the relation. Since we look at the lemmata of the words, we match `designer (design)` to `designed (design)`.
+The token `Scrabble` from the question has been matched to the entity `Q170436` for this candidate. That leaves the tokens `[Who, designed, ?]` for potential relation matches. We now compare these tokens with the aliases from the relation. Since we look at the lemmatized version of the words, we match `designer (design)` to `designed (design)`.
 
 ### 5. Ranker
 
-We generate features for every candidate, namely:
+We generate the following features for every candidate:
 
 - General
-  - `pattern_complexity`: The number of triples in the query. Since we use only one-triple templates at the moment, this feature is 1 for every candidate.
-  - `token_coverage`: The number of question tokens which is covered by the entities and relations of the candidate, divided by the number of tokens.
+  - `pattern_complexity`: The number of triples in the query. Since we use only one-triple templates at the moment, this feature has value 1 for every candidate.
+  - `token_coverage`: The number of question tokens which are covered by the entities and relations of the candidate, divided by the number of all tokens.
   - `token_coverage_no_stop`: Same as above, but ignoring all stop words.
 - Entities
   - `entity_score`: The popularity score (number of sitelinks) of the matched entity.
@@ -122,7 +129,7 @@ TODO
 
 ### 7. Candidate executor
 
-We translate our candidates to sparql queries and send it to the qlever backend in order to get the actual answer to the question.
+We translate our candidates to sparql queries and send it to the qlever backend in order to get the actual answer to the question. In case the result is a wikidata entity, we also query the english label.
 
 In our case, the answers for the three best ranked candidates are:
 
@@ -131,3 +138,33 @@ In our case, the answers for the three best ranked candidates are:
 1. `topic/Scrabble`
 
 This way, we get the correct answer to our question.
+
+## <a id="#api-docs"></a> API documentation
+
+The API includes an interactive documentation website where you can also try it out. It looks like this:
+
+![interactive API documentation](/img/project_aqqu-new/screenshot_api_docs.png)
+
+## <a id="#evaluation-frontend"></a> Evaluation frontend
+
+This project includes a frontend for viewing evaluation results in table format. It looks like this:
+
+![evaluation frontend](/img/project_aqqu-new/screenshot_evaluation_frontend.png)
+
+## <a id="#evaluation"></a> Evaluation
+
+We use [wikidata-simplequestions](https://github.com/askplatypus/wikidata-simplequestions) for evaluation. We use the file `annotated_wd_data_test_answerable.txt` which contains only questions which are theoretically answerable with the data from wikidata. It contains questions for both the ERT and TRE templates (see above). Since the quality of the questions related to TRE queries, we focus on the ERT queries. There are 4296 questions fitting the requirements.
+
+The explained pipeline achieves an average F1 score of 0.31 on the dataset. A ranker using a random scoring function achieves an F1 score of 0.01. You can see the two results here:
+
+![evaluation results](/img/project_aqqu-new/screenshot_evaluation_results.png)
+
+## <a id="#improvements"></a> Possible improvements
+
+There are many possible improvements, some of which are already implemented in the original Aqqu and need to migrated:
+
+1. At the moment, every question with at least one candidate is answered. It might make sense to implement a limit score which means that some questions stay un-answered.
+1. The ranking is done by manually and hard-coded scoring rules. The score should be calculated by some machine learning algorith, possibly using neural networks.
+1. At the moment, we use only query templates with one triple. This should be generalized. This would also mean that Aqqu-New would not have to rely solely on the truthy version of wikidata, making questions like `Who has been chancellor of Germany?` (as opposed to `Who is chancellor of Germany?`) possible.
+1. There is no answer-type matching. This means that it is hard to differentiate between questions like `Where was Angela Merkel born?` and `When was Angela Merkel born?`. The current pipeline will give both answers the same score.
+1. Some queries take a long time to complete. This is due to the pattern matcher sending lots of sparql queries to the backend in case lots of entities were matched. We could either drop some of the entity matches before doing the pattern matching or try to lower the amount of queries that need to be sent to the sparql backend.

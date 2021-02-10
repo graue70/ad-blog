@@ -15,16 +15,16 @@ Aqqu translates a given question into a sparql query and uses a sparql backend t
 
 ## Content
 
-1. <a href="#introduction">Introduction</a>
-1. <a href="#requirements">Requirements</a>
-1. <a href="#pre-processing">Pre-processing</a>
-1. <a href="#pipeline">Steps in the Pipeline</a>
-1. <a href="#api-docs">API documentation</a>
-1. <a href="#evaluation-frontend">Evaluation frontend</a>
-1. <a href="#evaluation">Evaluation</a>
-1. <a href="#improvements">Possible improvements</a>
+1. [Introduction](#introduction)
+1. [Requirements](#requirements)
+1. [Pre-processing](#pre-processing)
+1. [Steps in the Pipeline](#pipeline)
+1. [API documentation](#api-docs)
+1. [Evaluation frontend](#evaluation-frontend)
+1. [Evaluation](#evaluation)
+1. [Possible improvements](#improvements)
 
-## <a id="#introduction"></a> Introduction
+## Introduction {#introduction}
 
 While the original Aqqu as first published in [this paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) still accomplishes impressive results, it has several drawbacks:
 
@@ -36,11 +36,11 @@ These drawbacks led to this project, namely rewriting the entire program and bas
 
 Note that even though it is indeed a rewrite, major parts of the logic and some parts of the implementation were taken directly from the original Aqqu version which was developed mostly by Elmar Haussmann and later improved by Niklas Schnelle. Having read the original [Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) helps in understanding this version.
 
-## <a id="#requirements"></a> Requirements
+## Requirements {#requirements}
 
 Aqqu-New needs a way to get results for sparql queries. For now, it requires a working [qlever backend](https://qlever.cs.uni-freiburg.de/) (both for the pre-processing and for running the actual pipeline).
 
-## <a id="#pre-processing"></a> Pre-processing
+## Pre-processing {#pre-processing}
 
 Before Aqqu-New can run, some pre-processing needs to be done. This allows the program to answer some queries locally which otherwise would have to be sent to the sparql backend over the network, ultimately saving time when running the pipeline.
 
@@ -56,7 +56,7 @@ We could read the acquired data into memory whenever we load Aqqu-New. However, 
 
 The two indices have to be built once. The program then re-uses the same indices whenever it is loaded.
 
-## <a id="#pipeline"></a> Steps in the Pipeline
+## Steps in the Pipeline {#pipeline}
 
 Aqqu-New consists of several steps combined into a pipeline.
 
@@ -74,9 +74,9 @@ We find the entities in the question that relate to an entity from wikidata. For
 
 This gives us `[('Bulgaria', 'Q219'), ('capital', 'Q5119'), ('capital', 'Q8137'), ('capital', 'Q58784'), ('capital', 'Q193893'), ('Bulgaria', 'Q55032081'), ('capital', 'Q98912'), ('Bulgaria', 'Q407383'), ('Bulgaria', 'Q390361'), ('Bulgaria', 'Q405228')]` (these are only ten of the 49 linked entities).
 
-### <a id="#pattern_matcher"></a> 3. Pattern matcher
+### 3. Pattern matcher {#pattern-matcher}
 
-We predefined sparql query patterns that we try to match. We use two patterns for now, namely ERT and TRE (E=entity, R=relation, T=target). ERT is the first template described in Figure 1 of [the original Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf). TRE swaps its subject and object. This template is not necessary when working with freebase because all data is (or should be) duplicated and therefore reachable with just one of the two templates. In wikidata, this duplication is tried to be avoided which makes both templates necessary in Aqqu-New. (See section <a href="#improvements">Possible improvements</a> for an example of duplicated data in wikidata.)
+We predefined sparql query patterns that we try to match. We use two patterns for now, namely ERT and TRE (E=entity, R=relation, T=target). ERT is the first template described in Figure 1 of [the original Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf). TRE swaps its subject and object. This template is not necessary when working with freebase because all data is (or should be) duplicated and therefore reachable with just one of the two templates. In wikidata, this duplication is tried to be avoided which makes both templates necessary in Aqqu-New. (See section [Possible improvements](#improvements) for an example of duplicated data in wikidata.)
 
 For every linked entity we found in the previous step, we create one sparql query for every template and send it to the sparql backend.
 
@@ -162,23 +162,23 @@ In our example case, the answers for the three best ranked candidates are:
 
 The highest-ranked candidate leads to the correct answer to our original question in this case.
 
-## <a id="#api-docs"></a> API documentation
+## API documentation {#api-docs}
 
 The API includes an interactive documentation website implementing the [OpenAPI specification](https://swagger.io/specification/) where you can also try it out. It looks like this:
 
 ![interactive API documentation](/img/project_aqqu-new/screenshot_api_docs.png)
 
-## <a id="#evaluation-frontend"></a> Evaluation frontend
+## Evaluation frontend {#evaluation-frontend}
 
 This project includes a separate frontend for viewing evaluation results in table format. It looks like this:
 
 ![evaluation frontend](/img/project_aqqu-new/screenshot_evaluation_frontend.png)
 
-## <a id="#evaluation"></a> Evaluation
+## Evaluation {#evaluation}
 
-### <a id="#dataset"></a> Dataset
+### Dataset {#dataset}
 
-We use the test set of the [wikidata-simplequestions](https://github.com/askplatypus/wikidata-simplequestions) dataset for evaluation. Specifically we use the file `annotated_wd_data_test_answerable.txt` which contains only questions which are theoretically answerable with the data from wikidata. It contains 5622 questions in total, each of them with the gold answer and the gold sparql query leading to the correct answer. 4296 (76%) of those gold queries follow the ERT pattern and 1326 (24%) follow the TRE template (see section <a href="#pipeline">Pattern matcher</a> for an explanation of the patterns).
+We use the test set of the [wikidata-simplequestions](https://github.com/askplatypus/wikidata-simplequestions) dataset for evaluation. Specifically we use the file `annotated_wd_data_test_answerable.txt` which contains only questions which are theoretically answerable with the data from wikidata. It contains 5622 questions in total, each of them with the gold answer and the gold sparql query leading to the correct answer. 4296 (76%) of those gold queries follow the ERT pattern and 1326 (24%) follow the TRE template (see section [Pattern matcher](#pattern-matcher) for an explanation of the patterns).
 
 If we run the gold sparql queries from the dataset as a pipeline and evaluate it against the gold answers from the dataset, we get the following results:
 
@@ -197,11 +197,11 @@ The described pipeline achieves an average F1 score of 0.31 on the dataset. For 
 
 ![evaluation results](/img/project_aqqu-new/screenshot_evaluation_results.png)
 
-## <a id="#improvements"></a> Possible improvements
+## Possible improvements {#improvements}
 
 There are many possible improvements, some of which are already implemented in the original Aqqu and need to migrated:
 
-1. At the moment, every question with at least one candidate is answered. It might make sense to implement a limit score which means that some questions stay un-answered. This feature could be tested with the dataset `annotated_wd_data_test.txt` (see section <a href="#dataset">Dataset</a> for an explanation of the file) which also contains questions which are not answerable with wikidata.
+1. At the moment, every question with at least one candidate is answered. It might make sense to implement a limit score which means that some questions stay un-answered. This feature could be tested with the dataset `annotated_wd_data_test.txt` (see section [Dataset](#dataset) for an explanation of the file) which also contains questions which are not answerable with wikidata.
 1. The ranking is currently done by manually determined, hard-coded scoring rules. The score should instead be calculated by some machine learning algorithm, possibly using neural networks. There are also probably some more features which would help the ranking process.
 1. At the moment, we use only query templates with one triple. This should be generalized. This would also mean that Aqqu-New would not have to rely solely on the truthy version of wikidata, making questions like `Who has been chancellor of Germany?` (as opposed to `Who is chancellor of Germany?`) possible. (Note that the dataset that we use only contains the mentioned ERT and TRE patterns. For training and testing other templates, we would need another dataset.)
 1. There is no answer-type matching. This means that it is hard to differentiate between questions like `Where was Angela Merkel born?` and `When was Angela Merkel born?`. The current pipeline will give both answers the same score because both candidates have the exact same feature values.

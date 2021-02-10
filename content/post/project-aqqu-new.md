@@ -26,15 +26,15 @@ Aqqu translates a given question into a sparql query and uses a sparql backend t
 
 ## <a id="#introduction"></a> Introduction
 
-While the original Aqqu as published in [this paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) and later improved by the chair still accomplishes impressive results, it has several drawbacks:
+While the original Aqqu as first published in [this paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) still accomplishes impressive results, it has several drawbacks:
 
 1. Its logic relies heavily on data from freebase which has not been updated for more than four years. (It was shut down on 2 May 2016.)
 1. The program relies on several external data sources like the [clueweb dataset](http://lemurproject.org/clueweb09.php/) and the [Google News dataset](https://code.google.com/archive/p/word2vec/), which require manual updating or make running the program on a new machine harder.
-1. The code has been updated, added to and partly refactored for more than five years, leading to partly unstructured and hard-to-read code.
+1. The code has been updated, added to and partly refactored for more than five years, leading to partly unstructured and hard-to-maintain code.
 
 These drawbacks led to this project, namely rewriting the entire program and basing it on freebase's successor [wikidata](https://www.wikidata.org/) instead.
 
-Note that even though it is indeed a rewrite, major parts of the logic and some parts of the implementation were taken directly from the original Aqqu version which was developed mostly by Elmar Haussmann and later improved by Niklas Schnelle.
+Note that even though it is indeed a rewrite, major parts of the logic and some parts of the implementation were taken directly from the original Aqqu version which was developed mostly by Elmar Haussmann and later improved by Niklas Schnelle. Having read the original [Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) helps in understanding this version.
 
 ## <a id="#requirements"></a> Requirements
 
@@ -54,9 +54,11 @@ Other than these files, there are no external data dependencies. Since the files
 
 We could read the acquired data into memory whenever we load Aqqu-New. However, this would lead to load times of several minutes which slows down development a lot. Therefore, we use a [rocksdb](https://rocksdb.org/) database on the hard drive for an entity index and a relation index. This makes it possible to have a near-instant load time while still keeping the query time for the data low.
 
+The two indices have to be built once. The program then re-uses the same indices whenever it is loaded.
+
 ## <a id="#pipeline"></a> Steps in the Pipeline
 
-Aqqu-New consists of several steps combining into a pipeline.
+Aqqu-New consists of several steps combined into a pipeline.
 
 As an example, we run the pipeline for the following question: `What is the capital of Bulgaria?`
 
@@ -74,7 +76,7 @@ This gives us `[('Bulgaria', 'Q219'), ('capital', 'Q5119'), ('capital', 'Q8137')
 
 ### <a id="#pattern_matcher"></a> 3. Pattern matcher
 
-We predefined sparql query patterns that we now try to match. We use two patterns for now, namely ERT and TRE (E=entity, R=relation, T=target). ERT is the first template described in Figure 1 of [the original Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf). TRE swaps its subject and object. This template is not necessary when working with freebase because all data is (or should be) duplicated and therefore reachable with just one of the two templates. In wikidata, this duplication is tried to be avoided which makes both templates necessary in Aqqu-New. (See section <a href="#improvements">Possible improvements</a> for an example of duplicated data in wikidata.)
+We predefined sparql query patterns that we try to match. We use two patterns for now, namely ERT and TRE (E=entity, R=relation, T=target). ERT is the first template described in Figure 1 of [the original Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf). TRE swaps its subject and object. This template is not necessary when working with freebase because all data is (or should be) duplicated and therefore reachable with just one of the two templates. In wikidata, this duplication is tried to be avoided which makes both templates necessary in Aqqu-New. (See section <a href="#improvements">Possible improvements</a> for an example of duplicated data in wikidata.)
 
 For every linked entity we found in the previous step, we create one sparql query for every template and send it to the sparql backend.
 
@@ -97,7 +99,7 @@ SELECT DISTINCT ?relation WHERE {
 }
 ```
 
-This gives us 946 pattern matches or 946 candidates for a sparql query which could potentially answer the question. Three examples of generated candidates are `Q219-P36-?0`, `?0-P1376-Q219` and `Q390361-P1376-?0` (leaving out the prefixes and keywords of the respective sparql query).
+The results give us 946 pattern matches or 946 candidates for a sparql query which could potentially answer the question. Three examples of generated candidates are `Q219-P36-?0`, `?0-P1376-Q219` and `Q390361-P1376-?0` (leaving out the prefixes and keywords of the respective sparql query).
 
 ### 4. Relation matcher
 
@@ -150,7 +152,7 @@ Four our example question, these are the scores of the three candidates from the
 
 ### 6. Candidate executor
 
-We translate our candidates to sparql queries and send it to the qlever backend in order to get the actual answer to the question. In case the result is a wikidata entity, we also query its english label.
+We translate our candidates to sparql queries and send them to the qlever backend in order to get the actual answer to the question. In case the result is a wikidata entity, we also query its english label.
 
 In our example case, the answers for the three best ranked candidates are:
 
@@ -162,19 +164,19 @@ The highest-ranked candidate leads to the correct answer to our original questio
 
 ## <a id="#api-docs"></a> API documentation
 
-The API includes an interactive documentation website where you can also try it out. It looks like this:
+The API includes an interactive documentation website implementing the [OpenAPI specification](https://swagger.io/specification/) where you can also try it out. It looks like this:
 
 ![interactive API documentation](/img/project_aqqu-new/screenshot_api_docs.png)
 
 ## <a id="#evaluation-frontend"></a> Evaluation frontend
 
-This project includes a frontend for viewing evaluation results in table format. It looks like this:
+This project includes a separate frontend for viewing evaluation results in table format. It looks like this:
 
 ![evaluation frontend](/img/project_aqqu-new/screenshot_evaluation_frontend.png)
 
 ## <a id="#evaluation"></a> Evaluation
 
-### Dataset
+### <a id="#dataset"></a> Dataset
 
 We use the test set of the [wikidata-simplequestions](https://github.com/askplatypus/wikidata-simplequestions) dataset for evaluation. Specifically we use the file `annotated_wd_data_test_answerable.txt` which contains only questions which are theoretically answerable with the data from wikidata. It contains 5622 questions in total, each of them with the gold answer and the gold sparql query leading to the correct answer. 4296 (76%) of those gold queries follow the ERT pattern and 1326 (24%) follow the TRE template (see section <a href="#pipeline">Pattern matcher</a> for an explanation of the patterns).
 
@@ -199,12 +201,12 @@ The described pipeline achieves an average F1 score of 0.31 on the dataset. For 
 
 There are many possible improvements, some of which are already implemented in the original Aqqu and need to migrated:
 
-1. At the moment, every question with at least one candidate is answered. It might make sense to implement a limit score which means that some questions stay un-answered.
-1. The ranking is currently done by hard-coded scoring rules. The score should be calculated by some machine learning algorithm, possibly using neural networks. There are also probably some more features which would help the ranking process.
+1. At the moment, every question with at least one candidate is answered. It might make sense to implement a limit score which means that some questions stay un-answered. This feature could be tested with the dataset `annotated_wd_data_test.txt` (see section <a href="#dataset">Dataset</a> for an explanation of the file) which also contains questions which are not answerable with wikidata.
+1. The ranking is currently done by manually determined, hard-coded scoring rules. The score should instead be calculated by some machine learning algorithm, possibly using neural networks. There are also probably some more features which would help the ranking process.
 1. At the moment, we use only query templates with one triple. This should be generalized. This would also mean that Aqqu-New would not have to rely solely on the truthy version of wikidata, making questions like `Who has been chancellor of Germany?` (as opposed to `Who is chancellor of Germany?`) possible. (Note that the dataset that we use only contains the mentioned ERT and TRE patterns. For training and testing other templates, we would need another dataset.)
 1. There is no answer-type matching. This means that it is hard to differentiate between questions like `Where was Angela Merkel born?` and `When was Angela Merkel born?`. The current pipeline will give both answers the same score because both candidates have the exact same feature values.
 1. Some queries take a long time to complete. This is due to the pattern matcher sending lots of sparql queries to the backend in case lots of entities were matched. These are some ideas for how the problem could be solved:
-  1. We could drop some of the entity matches before doing the pattern matching.
+  1. We could drop some of the irrelevant entity matches before doing the pattern matching.
   1. We could try to lower the amount of queries that need to be sent to the sparql backend by combining multiple queries into one.
   1. Another option would be to pre-compute patterns for entities, but this might not be feasible for all entities due to the amount of disk space that would require, especially when adding more templates.
 1. There are some cases where data is duplicated in wikidata which means that two different queries would lead to the correct answer. (The Bulgaria example above is such a case. Wikidata knows both that Sofia is the capital of Bulgaria and that Bulgaria has the capital Sofia. The symmetric relation 'married to' is another example where this occurs.) Instead of returning two identical results (originating from different query candidates), maybe it would make sense to combine the results into one (possibly with a higher score)?

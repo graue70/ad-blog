@@ -9,7 +9,7 @@ image: "img/writing.jpg"
 draft: true
 ---
 
-Aqqu translates a given question into a SPARQL query and uses a SPARQL backend to get the answer to the question. While the original Aqqu uses Freebase and some additional external sources, this new version uses nothing but Wikidata.
+Aqqu translates a given question into a SPARQL query and executes it on a knowledge base to get the answer to the question. While the original Aqqu uses Freebase and some additional external sources, this new version uses nothing but Wikidata.
 
 <!--more-->
 
@@ -26,7 +26,20 @@ Aqqu translates a given question into a SPARQL query and uses a SPARQL backend t
 
 ## Introduction {#introduction}
 
-[Aqqu](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) is a program which answers questions. It does that by mapping a given question to the SPARQL query which gets the correct answer from the knowledge base called [Freebase](https://en.wikipedia.org/wiki/Freebase_(database)).
+In order to find information about the world, one can use knowledge bases like [Freebase](https://en.wikipedia.org/wiki/Freebase_(database)) or [Wikidata](https://www.wikidata.org/) which contain billions of facts in a structured way. The facts can be extracted with [SPARQL](https://www.w3.org/TR/sparql11-query/) queries. Unfortunately, lots of expert knowledge (regarding syntax, prefixes and IDs) is required for constructing SPARQL queries. For example, the corresponding SPARQL query for the simple question *What is the capital of Bulgaria?* (ignoring entity labels for now) is this:
+```sparql
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wd: <http://www.wikidata.org/entity/>
+SELECT ?capital WHERE {
+  wd:Q219 wdt:P36 ?capital .
+}
+```
+
+In order to construct it, we need to know that Q219 is the entity ID of Bulgaria and that P36 is the ID of the property meaning 'capital'. We need to know the prefixes for entities and properties, the general structure and keywords like 'SELECT' and 'WHERE'.
+
+Projects like [QLever UI](https://qlever.cs.uni-freiburg.de/) simplify the process by providing helpful auto-completion options but they do not remove all of the required expert knowledge. It would be much simpler for the user to type a question in natural language instead of having to deal with programmatic query languages.
+
+[Aqqu](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) is a program which does exactly that. It answers questions by mapping a given question to the corresponding SPARQL query which gets the correct answer from the knowledge base called Freebase.
 
 While the original Aqqu still accomplishes impressive results, it has several drawbacks:
 
@@ -34,11 +47,11 @@ While the original Aqqu still accomplishes impressive results, it has several dr
 1. The program relies on several external data sources like the [Clueweb dataset](http://lemurproject.org/clueweb09.php/) and the [Google News dataset](https://code.google.com/archive/p/word2vec/), which require manual updating or make running the program on a new machine harder.
 1. The code has been updated, added to and partly refactored for more than five years, leading to partly unstructured and hard-to-maintain code.
 
-These drawbacks led to this project, namely rewriting the entire program and basing it on Freebase's successor [Wikidata](https://www.wikidata.org/) instead.
+These drawbacks led to this project, namely rewriting the entire program and basing it on Freebase's successor Wikidata instead.
 
-Note that even though it is indeed a rewrite, major parts of the logic and some parts of the implementation were taken directly from the original Aqqu version[^1]. Having read the original [Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) helps in understanding this version.
+Note that even though it is indeed a rewrite, major parts of the logic and some parts of the implementation were taken directly from the original Aqqu version[^aqqu-citation]. Having read the original [Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) helps in understanding this version.
 
-[^1]: Note that the Aqqu version first published in the mentioned [paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) was later improved by Niklas Schnelle. We used the improved version as a base for this project.
+[^aqqu-citation]: Note that the Aqqu version first published in the mentioned [paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) was later improved by Niklas Schnelle. We used the improved version as a base for this project.
 
 ## Requirements {#requirements}
 
@@ -68,21 +81,36 @@ As an example, we run the pipeline for the following question: `What is the capi
 
 ### 1. Tokenizer
 
-We first run a tokenizer from [spaCy](https://spacy.io/) on the question.
+We first run a tokenizer from [spaCy](https://spacy.io/) on the question. It finds the tokens in the text. Tokens can loosely be understood as words.
 
-This gives us `[What, is, the, capital, of, Bulgaria, ?]`.
+For our example, this gives us `[What, is, the, capital, of, Bulgaria, ?]`.
 
 ### 2. Entity linker
 
-We find the entities in the question that relate to an entity from Wikidata. For that, we go through every subset of consecutive tokens in the question and check whether the entity index contains an alias with that text. If it does, we store the alias together with its Wikidata id.
+We find the entities in the question that relate to an entity from Wikidata. For that, we go through every subset of consecutive tokens in the question and check whether the entity index contains an alias with that text. If it does, we store the alias together with its Wikidata ID.
 
-This gives us `[('Bulgaria', 'Q219'), ('capital', 'Q5119'), ('capital', 'Q8137'), ('capital', 'Q58784'), ('capital', 'Q193893'), ('Bulgaria', 'Q55032081'), ('capital', 'Q98912'), ('Bulgaria', 'Q407383'), ('Bulgaria', 'Q390361'), ('Bulgaria', 'Q405228')]` (these are only ten of the 49 linked entities).
+For our example, this gives us `[('Bulgaria', 'Q219'), ('capital', 'Q5119'), ('capital', 'Q8137'), ('capital', 'Q58784'), ('capital', 'Q193893'), ('Bulgaria', 'Q55032081'), ('capital', 'Q98912'), ('Bulgaria', 'Q407383'), ('Bulgaria', 'Q390361'), ('Bulgaria', 'Q405228')]`. (These are only ten of the 49 linked entities.)
 
-*Note that it is possible to skip this step and instead provide gold entities together with the question. This is especially useful for the [Aqqu frontend](https://github.com/ad-freiburg/aqqu-frontend) which lets the user choose entities in the question interactively.*
+Note that there are multiple linked entities matched to the same word in the question. We do not decide on which linked entities are actually correct yet. We postpone this to the ranking step.
+
+*Note that it is possible to skip this step and instead provide gold entities together with the question. This is especially useful when using the [Aqqu frontend](https://github.com/ad-freiburg/aqqu-frontend) which lets the user choose entities in the question interactively.*
 
 ### 3. Pattern matcher {#pattern-matcher}
 
-We predefined SPARQL query patterns that we try to match. We use two patterns for now, namely ERT and TRE (E=entity, R=relation, T=target). ERT is the first template described in Figure 1 of [the original Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf). TRE swaps its subject and object. This template is not necessary when working with Freebase because all data is (or should be) duplicated and therefore reachable with just one of the two templates. In Wikidata, this duplication is tried to be avoided which makes both templates necessary in Aqqu-Wikidata. (See section [Possible improvements](#improvements) for an example of duplicated data in Wikidata.)
+We predefined SPARQL query patterns that we try to match. We use two patterns for now, namely ERT and TRE (E=entity, R=relation, T=target). ERT is the first template described in Figure 1 of [the original Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf). The example query in the [introduction](#introduction) also follows this pattern.
+
+TRE swaps the subject and object, meaning the variable comes first. An example query for the question `What books did J. R. R. Tolkien write?` would be this (P50 is 'author' and Q892 is 'J. R. R. Tolkien'):
+```sparql
+PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+SELECT ?book WHERE {
+  ?book wdt:P50 wd:Q892 .
+}
+```
+
+This second template is not necessary when working with Freebase because all data is (or should be) duplicated. (Freebase stores both that a book was written by a person and that a person wrote a book.) In Wikidata, this duplication is usually avoided[^duplication] which makes both templates necessary in Aqqu-Wikidata.
+
+[^duplication]: There are some duplications in Wikidata. The example query concerning the capital of Bulgaria is one of them (Sofia is the capital of Bulgaria and Bulgaria has the capital Sofia). The pair 'has child' and 'child of' is another. The property 'married to' is even symmetric.
 
 For every linked entity we found in the previous step, we create one SPARQL query for every template and send it to the SPARQL backend.
 
@@ -105,20 +133,20 @@ SELECT DISTINCT ?relation WHERE {
 }
 ```
 
-The results give us 946 pattern matches or 946 candidates for a SPARQL query which could potentially answer the question. Three examples of generated candidates are `Q219-P36-?0`, `?0-P1376-Q219` and `Q390361-P1376-?0` (leaving out the prefixes and keywords of the respective SPARQL query).
+The results (the relations) give us 946 pattern matches or 946 candidates for a SPARQL query which could potentially answer the question. Three examples of generated candidates are `Q219-P36-?0`, `?0-P1376-Q219` and `Q390361-P1376-?0` (leaving out the prefixes and keywords of the respective SPARQL query).
 
 ### 4. Relation matcher
 
 We have only looked at the entities so far. Now we try to find matching relations in the candidates. For that, we ask the relation index for all aliases of the relation of a particular query candidate and compare them to the tokens of the original question which have not already been matched to the entity. For every candidate, we store the relation matches.
 
-In this case, let's look at the candidate `Q219-P36-?0`. The relation `P36` has the following aliases, among others:
+For our example case, let's look at the candidate `Q219-P36-?0`. The relation `P36` has the following aliases, among others:
 
+- capital
 - county seat
 - court residence
 - chef-lieu
-- capital
 
-The token `Bulgaria` from the question has been matched to the entity `Q219` for this particular candidate. That leaves the tokens `[What, is, the, capital, of, ?]` for potential relation matches. We now compare these tokens with the aliases from the relation. We match the word 'capital' (label of P36) to the same word in the question and store some information about the match together with the candidate. It will be used to calculate candidate features which are used for ranking in the next step.
+The token `Bulgaria` from the question has been matched to the entity `Q219` for this particular candidate. That leaves the tokens `[What, is, the, capital, of, ?]` for potential relation matches. We now compare these tokens with the aliases from the relation. We match the word 'capital' (alias of P36) to the same word in the question and store some information about the match together with the candidate. It will be used to calculate candidate features which are used for ranking in the next step.
 
 ### 5. Ranker
 
@@ -135,9 +163,11 @@ We generate the following features for every candidate:
   - `n_relation_tokens`: The number of question tokens which were matched to relations.
   - `n_relation_tokens_no_stop`: Same as above, but ignoring all stop words.
 - General
-  - `pattern_complexity`: The number of triples in the query. Since we use only one-triple templates at the moment, this feature has value 1 for every candidate.
+  - `pattern_complexity`: The number of triples[^ignore-labels] in the query. Since we use only one-triple templates at the moment, this feature has value 1 for every candidate.
   - `token_coverage`: The number of question tokens which are covered by the entities and relations of the candidate, divided by the number of all tokens.
   - `token_coverage_no_stop`: Same as above, but ignoring all stop words.
+
+[^ignore-labels]: We ignore triples for getting the label of an entity and count only the triples necessary to get the answer entity.
 
 We assign every one of the generated candidates a score using a simple hard-coded formula. We only use these four of the listed features:
 
@@ -158,7 +188,7 @@ Four our example question, these are the scores of the three candidates from the
 
 ### 6. Candidate executor
 
-We translate our candidates to SPARQL queries and send them to the QLever backend in order to get the actual answer to the question. In case the result is a Wikidata entity, we also query its english label.
+We translate our candidates to full SPARQL queries and send them to the QLever backend in order to get the actual answer to the question. In case the result is a Wikidata entity, we also query its english label.
 
 In our example case, the answers for the three best ranked candidates are:
 
@@ -186,7 +216,7 @@ This project includes a separate frontend for viewing evaluation results in tabl
 
 We use the test set of the [wikidata-simplequestions](https://github.com/askplatypus/wikidata-simplequestions) dataset for evaluation. Specifically we use the file `annotated_wd_data_test_answerable.txt` which contains only questions which are theoretically answerable with the data from Wikidata. It contains 5622 questions in total, each of them with the gold answer and the gold SPARQL query leading to the correct answer. 4296 (76%) of those gold queries follow the ERT pattern and 1326 (24%) follow the TRE template (see section [Pattern matcher](#pattern-matcher) for an explanation of the patterns).
 
-If we run the gold SPARQL queries from the dataset as a pipeline and evaluate it against the gold answers from the dataset, we get the following results:
+Since the dataset contains both the gold SPARQL queries and the gold answers, we can first evaluate the quality of the dataset itself. We create a new pipeline (not using any of the steps outlined above) which picks the respective gold SPARQL query from the dataset for every question from the dataset and evaluate this fake pipeline against the gold answers from the dataset. This yields the following results:
 
 ![evaluation results perfect](/img/project_aqqu-wikidata/screenshot_evaluation_results_perfect.png)
 
@@ -195,24 +225,43 @@ If we run the gold SPARQL queries from the dataset as a pipeline and evaluate it
 1. Many of the TRE questions ask for examples of a group, for example: 'Name a baseball player'. The gold answer is exactly one baseball player (the gold answer set has length one for every question in the dataset). The result to the gold SPARQL query contains all the 32,000 baseball players in Wikidata. This leads to a high precision and a very low recall.
 1. Every candidate SPARQL query that Aqqu-Wikidata sends to its SPARQL backend currently uses a limit of 300 (meaning the result set is cut off at length 300). That means that in the baseball player example, we might even get a precision of zero because the gold answer baseball player is not part of the 300 returned baseball players. This is of course not a problem of the dataset but of our program but it is questionable whether it would be better overall to enable result sets of length 40,000 (and even that limit would be too low for some queries).
 
-Because of the mentioned problems with the TRE patterns in the dataset, we decided to only use the ERT part of the dataset for now.
+Because of the mentioned problems with the queries using the TRE pattern in the dataset, we decided to only use the ERT subset of the dataset.
 
 ### Evaluation results
 
-The described pipeline achieves an average F1 score of 0.31 on the dataset. For comparison, a ranker using a random scoring function achieves an average F1 score of 0.01. You can see the two results here:
+The [described pipeline](#pipeline) achieves an average F1 score of 0.31 on the dataset. For comparison, a ranker using a random scoring function achieves an average F1 score of 0.01. These are the two results compared:
 
 ![evaluation results](/img/project_aqqu-wikidata/screenshot_evaluation_results.png)
 
 ## Possible improvements {#improvements}
 
-There are many possible improvements, some of which are already implemented in the original Aqqu and need to migrated:
+There are many possible improvements, some of which are already implemented in the original Aqqu and need to be migrated:
 
 1. At the moment, every question with at least one candidate is answered. It might make sense to implement a limit score which means that some questions stay un-answered. This feature could be tested with the dataset `annotated_wd_data_test.txt` (see section [Dataset](#dataset) for an explanation of the file) which also contains questions which are not answerable with Wikidata.
 1. The ranking is currently done by manually determined, hard-coded scoring rules. The score should instead be calculated by some machine learning algorithm, possibly using neural networks. There are also probably some more features which would help the ranking process.
-1. At the moment, we use only query templates with one triple. This should be generalized. This would also mean that Aqqu-Wikidata would not have to rely solely on the truthy version of Wikidata, making questions like `Who has been chancellor of Germany?` (as opposed to `Who is chancellor of Germany?`) possible. (Note that the dataset that we use only contains the mentioned ERT and TRE patterns. For training and testing other templates, we would need another dataset.)
+1. At the moment, we use only query templates with one triple. This should be generalized. This would also mean that Aqqu-Wikidata would not have to rely solely on the truthy version of Wikidata, making questions like `Who has been chancellor of Germany?` (as opposed to `Who is chancellor of Germany?`) possible.
+  Compare the two corresponding SPARQL queries:
+
+    ```sparql
+    PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+    PREFIX wd: <http://www.wikidata.org/entity/>
+    SELECT ?head_of_government WHERE {
+      wd:Q183 wdt:P6 ?head_of_government .
+    }
+    ```
+    ```sparql
+    PREFIX ps: <http://www.wikidata.org/prop/statement/>
+    PREFIX p: <http://www.wikidata.org/prop/>
+    PREFIX wd: <http://www.wikidata.org/entity/>
+    SELECT ?head_of_government WHERE {
+      wd:Q183 p:P6 ?0 .
+      ?0 ps:P6 ?head_of_government .
+    }
+    ```
+  Note that the dataset that we use only contains the mentioned ERT and TRE patterns. For training and testing other templates, we would need a different dataset.
 1. There is no answer-type matching. This means that it is hard to differentiate between questions like `Where was Angela Merkel born?` and `When was Angela Merkel born?`. The current pipeline will give both answers the same score because both candidates have the exact same feature values.
 1. Some queries take a long time to complete. This is due to the pattern matcher sending lots of SPARQL queries to the backend in case lots of entities were matched. These are some ideas for how the problem could be solved:
   1. We could drop some of the irrelevant entity matches before doing the pattern matching.
   1. We could try to lower the amount of queries that need to be sent to the SPARQL backend by combining multiple queries into one.
   1. Another option would be to pre-compute patterns for entities, but this might not be feasible for all entities due to the amount of disk space that would require, especially when adding more templates.
-1. There are some cases where data is duplicated in Wikidata which means that two different queries would lead to the correct answer. (The Bulgaria example above is such a case. Wikidata knows both that Sofia is the capital of Bulgaria and that Bulgaria has the capital Sofia. The symmetric relation 'married to' is another example where this occurs.) Instead of returning two identical results (originating from different query candidates), maybe it would make sense to combine the results into one (possibly with a higher score)?
+1. There are some cases where data is duplicated in Wikidata[^duplication] which means that two different queries would lead to the correct answer. Instead of returning two identical results (originating from different query candidates), maybe it would make sense to combine the results into one (possibly with a higher score)?

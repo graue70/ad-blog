@@ -1,8 +1,8 @@
 ---
-title: "Aqqu-New"
+title: "Simple Question Answering on Wikidata"
 date: 2021-02-05T15:23:47+01:00
 author: "Thomas Goette"
-authorAvatar: "img/project_aqqu-new/avatar.png"
+authorAvatar: "img/project_aqqu-wikidata/avatar.png"
 tags: [NLP, question answering, qa, knowledge base, NER, SPARQL, QLever, Aqqu]
 categories: [project]
 image: "img/writing.jpg"
@@ -42,11 +42,11 @@ Note that even though it is indeed a rewrite, major parts of the logic and some 
 
 ## Requirements {#requirements}
 
-Aqqu-New needs a way to get results for SPARQL queries. For now, it requires a working [QLever backend](https://qlever.cs.uni-freiburg.de/) (both for the pre-processing and for running the actual pipeline).
+Aqqu-Wikidata needs a way to get results for SPARQL queries. For now, it requires a working [QLever backend](https://qlever.cs.uni-freiburg.de/) (both for the pre-processing and for running the actual pipeline).
 
 ## Pre-processing {#pre-processing}
 
-Before Aqqu-New can run, some pre-processing needs to be done. This allows the program to answer some queries locally which otherwise would have to be sent to the SPARQL backend over the network, ultimately saving time when running the pipeline.
+Before Aqqu-Wikidata can run, some pre-processing needs to be done. This allows the program to answer some queries locally which otherwise would have to be sent to the SPARQL backend over the network, ultimately saving time when running the pipeline.
 
 ### 1. Acquire data
 
@@ -56,13 +56,13 @@ Other than these files, there are no external data dependencies. Since the files
 
 ### 2. Build indices
 
-We could read the acquired data into memory whenever we load Aqqu-New. However, this would lead to load times of several minutes which slows down development a lot. Therefore, we use a [rocksdb](https://rocksdb.org/) database on the hard drive for an entity index and a relation index. This makes it possible to have a near-instant load time while still keeping the query time for the data low.
+We could read the acquired data into memory whenever we load Aqqu-Wikidata. However, this would lead to load times of several minutes which slows down development a lot. Therefore, we use a [rocksdb](https://rocksdb.org/) database on the hard drive for an entity index and a relation index. This makes it possible to have a near-instant load time while still keeping the query time for the data low.
 
 The two indices have to be built once. The program then re-uses the same indices whenever it is loaded.
 
 ## Steps in the Pipeline {#pipeline}
 
-Aqqu-New consists of several steps combined into a pipeline.
+Aqqu-Wikidata consists of several steps combined into a pipeline.
 
 As an example, we run the pipeline for the following question: `What is the capital of Bulgaria?`
 
@@ -82,7 +82,7 @@ This gives us `[('Bulgaria', 'Q219'), ('capital', 'Q5119'), ('capital', 'Q8137')
 
 ### 3. Pattern matcher {#pattern-matcher}
 
-We predefined SPARQL query patterns that we try to match. We use two patterns for now, namely ERT and TRE (E=entity, R=relation, T=target). ERT is the first template described in Figure 1 of [the original Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf). TRE swaps its subject and object. This template is not necessary when working with Freebase because all data is (or should be) duplicated and therefore reachable with just one of the two templates. In Wikidata, this duplication is tried to be avoided which makes both templates necessary in Aqqu-New. (See section [Possible improvements](#improvements) for an example of duplicated data in Wikidata.)
+We predefined SPARQL query patterns that we try to match. We use two patterns for now, namely ERT and TRE (E=entity, R=relation, T=target). ERT is the first template described in Figure 1 of [the original Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf). TRE swaps its subject and object. This template is not necessary when working with Freebase because all data is (or should be) duplicated and therefore reachable with just one of the two templates. In Wikidata, this duplication is tried to be avoided which makes both templates necessary in Aqqu-Wikidata. (See section [Possible improvements](#improvements) for an example of duplicated data in Wikidata.)
 
 For every linked entity we found in the previous step, we create one SPARQL query for every template and send it to the SPARQL backend.
 
@@ -172,13 +172,13 @@ The highest-ranked candidate leads to the correct answer to our original questio
 
 The API includes an interactive documentation website implementing the [OpenAPI specification](https://swagger.io/specification/) where you can also try it out. It looks like this:
 
-![interactive API documentation](/img/project_aqqu-new/screenshot_api_docs.png)
+![interactive API documentation](/img/project_aqqu-wikidata/screenshot_api_docs.png)
 
 ## Evaluation frontend {#evaluation-frontend}
 
 This project includes a separate frontend for viewing evaluation results in table format. It looks like this:
 
-![evaluation frontend](/img/project_aqqu-new/screenshot_evaluation_frontend.png)
+![evaluation frontend](/img/project_aqqu-wikidata/screenshot_evaluation_frontend.png)
 
 ## Evaluation {#evaluation}
 
@@ -188,12 +188,12 @@ We use the test set of the [wikidata-simplequestions](https://github.com/askplat
 
 If we run the gold SPARQL queries from the dataset as a pipeline and evaluate it against the gold answers from the dataset, we get the following results:
 
-![evaluation results perfect](/img/project_aqqu-new/screenshot_evaluation_results_perfect.png)
+![evaluation results perfect](/img/project_aqqu-wikidata/screenshot_evaluation_results_perfect.png)
 
 (The run with the word 'forward' contains only the queries with the ERT pattern and the word 'reverse' contains only the queries with the TRE pattern.) We see that the results on the two subset are very different (compare average F1 of 10% vs 93%). We know of two problems leading to a lower score for the TRE queries:
 
 1. Many of the TRE questions ask for examples of a group, for example: 'Name a baseball player'. The gold answer is exactly one baseball player (the gold answer set has length one for every question in the dataset). The result to the gold SPARQL query contains all the 32,000 baseball players in Wikidata. This leads to a high precision and a very low recall.
-1. Every candidate SPARQL query that Aqqu-New sends to its SPARQL backend currently uses a limit of 300 (meaning the result set is cut off at length 300). That means that in the baseball player example, we might even get a precision of zero because the gold answer baseball player is not part of the 300 returned baseball players. This is of course not a problem of the dataset but of our program but it is questionable whether it would be better overall to enable result sets of length 40,000 (and even that limit would be too low for some queries).
+1. Every candidate SPARQL query that Aqqu-Wikidata sends to its SPARQL backend currently uses a limit of 300 (meaning the result set is cut off at length 300). That means that in the baseball player example, we might even get a precision of zero because the gold answer baseball player is not part of the 300 returned baseball players. This is of course not a problem of the dataset but of our program but it is questionable whether it would be better overall to enable result sets of length 40,000 (and even that limit would be too low for some queries).
 
 Because of the mentioned problems with the TRE patterns in the dataset, we decided to only use the ERT part of the dataset for now.
 
@@ -201,7 +201,7 @@ Because of the mentioned problems with the TRE patterns in the dataset, we decid
 
 The described pipeline achieves an average F1 score of 0.31 on the dataset. For comparison, a ranker using a random scoring function achieves an average F1 score of 0.01. You can see the two results here:
 
-![evaluation results](/img/project_aqqu-new/screenshot_evaluation_results.png)
+![evaluation results](/img/project_aqqu-wikidata/screenshot_evaluation_results.png)
 
 ## Possible improvements {#improvements}
 
@@ -209,7 +209,7 @@ There are many possible improvements, some of which are already implemented in t
 
 1. At the moment, every question with at least one candidate is answered. It might make sense to implement a limit score which means that some questions stay un-answered. This feature could be tested with the dataset `annotated_wd_data_test.txt` (see section [Dataset](#dataset) for an explanation of the file) which also contains questions which are not answerable with Wikidata.
 1. The ranking is currently done by manually determined, hard-coded scoring rules. The score should instead be calculated by some machine learning algorithm, possibly using neural networks. There are also probably some more features which would help the ranking process.
-1. At the moment, we use only query templates with one triple. This should be generalized. This would also mean that Aqqu-New would not have to rely solely on the truthy version of Wikidata, making questions like `Who has been chancellor of Germany?` (as opposed to `Who is chancellor of Germany?`) possible. (Note that the dataset that we use only contains the mentioned ERT and TRE patterns. For training and testing other templates, we would need another dataset.)
+1. At the moment, we use only query templates with one triple. This should be generalized. This would also mean that Aqqu-Wikidata would not have to rely solely on the truthy version of Wikidata, making questions like `Who has been chancellor of Germany?` (as opposed to `Who is chancellor of Germany?`) possible. (Note that the dataset that we use only contains the mentioned ERT and TRE patterns. For training and testing other templates, we would need another dataset.)
 1. There is no answer-type matching. This means that it is hard to differentiate between questions like `Where was Angela Merkel born?` and `When was Angela Merkel born?`. The current pipeline will give both answers the same score because both candidates have the exact same feature values.
 1. Some queries take a long time to complete. This is due to the pattern matcher sending lots of SPARQL queries to the backend in case lots of entities were matched. These are some ideas for how the problem could be solved:
   1. We could drop some of the irrelevant entity matches before doing the pattern matching.

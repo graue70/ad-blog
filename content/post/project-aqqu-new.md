@@ -116,7 +116,7 @@ In this case, let's look at the candidate `Q219-P36-?0`. The relation `P36` has 
 - chef-lieu
 - capital
 
-The token `Bulgaria` from the question has been matched to the entity `Q219` for this particular candidate. That leaves the tokens `[What, is, the, capital, of, ?]` for potential relation matches. We now compare these tokens with the aliases from the relation. We match the word 'capital' (label of P36) to the same word in the question.
+The token `Bulgaria` from the question has been matched to the entity `Q219` for this particular candidate. That leaves the tokens `[What, is, the, capital, of, ?]` for potential relation matches. We now compare these tokens with the aliases from the relation. We match the word 'capital' (label of P36) to the same word in the question and store some information about the match together with the candidate. It will be used to calculate candidate features which are used for ranking in the next step.
 
 ### 5. Ranker
 

@@ -13,7 +13,7 @@ Aqqu translates a given question into a SPARQL query and executes it on a knowle
 
 <!--more-->
 
-## Content
+## Content {#content}
 
 1. [Introduction](#introduction)
 1. [Requirements](#requirements)
@@ -61,13 +61,13 @@ Aqqu-Wikidata needs a way to get results for SPARQL queries. For now, it require
 
 Before Aqqu-Wikidata can run, some pre-processing needs to be done. This allows the program to answer some queries locally which otherwise would have to be sent to the SPARQL backend over the network, ultimately saving time when running the pipeline.
 
-### 1. Acquire data
+### 1. Acquire data {#acquire-data}
 
 First, we need to acquire some data about entities and relations. For that, we send a few SPARQL queries to the SPARQL backend and save the results in text files. The acquired information contains the label, popularity score and all aliases for all entities as well as all aliases for all relations. For the popularity score, we currently use the number of wikipedia sitelinks the entity has.
 
 Other than these files, there are no external data dependencies. Since the files can be generated automatically, the entire program is self-contained (except for the already mentioned required SPARQL backend).
 
-### 2. Build indices
+### 2. Build indices {#build-indices}
 
 We could read the acquired data into memory whenever we load Aqqu-Wikidata. However, this would lead to load times of several minutes which slows down development a lot. Therefore, we use a [rocksdb](https://rocksdb.org/) database on the hard drive for an entity index and a relation index. This makes it possible to have a near-instant load time while still keeping the query time for the data low.
 
@@ -79,13 +79,13 @@ Aqqu-Wikidata consists of several steps combined into a pipeline.
 
 As an example, we run the pipeline for the following question: `What is the capital of Bulgaria?`
 
-### 1. Tokenizer
+### 1. Tokenizer {#tokenizer}
 
 We first run a tokenizer from [spaCy](https://spacy.io/) on the question. It finds the tokens in the text. Tokens can loosely be understood as words.
 
 For our example, this gives us `[What, is, the, capital, of, Bulgaria, ?]`.
 
-### 2. Entity linker
+### 2. Entity linker {#entity-linker}
 
 We find the entities in the question that relate to an entity from Wikidata. For that, we go through every subset of consecutive tokens in the question and check whether the entity index contains an alias with that text. If it does, we store the alias together with its Wikidata ID.
 
@@ -135,7 +135,7 @@ SELECT DISTINCT ?relation WHERE {
 
 The results (the relations) give us 946 pattern matches or 946 candidates for a SPARQL query which could potentially answer the question. Three examples of generated candidates are `Q219-P36-?0`, `?0-P1376-Q219` and `Q390361-P1376-?0` (leaving out the prefixes and keywords of the respective SPARQL query).
 
-### 4. Relation matcher
+### 4. Relation matcher {#relation-matcher}
 
 We have only looked at the entities so far. Now we try to find matching relations in the candidates. For that, we ask the relation index for all aliases of the relation of a particular query candidate and compare them to the tokens of the original question which have not already been matched to the entity. For every candidate, we store the relation matches.
 
@@ -148,7 +148,7 @@ For our example case, let's look at the candidate `Q219-P36-?0`. The relation `P
 
 The token `Bulgaria` from the question has been matched to the entity `Q219` for this particular candidate. That leaves the tokens `[What, is, the, capital, of, ?]` for potential relation matches. We now compare these tokens with the aliases from the relation. We match the word 'capital' (alias of P36) to the same word in the question and store some information about the match together with the candidate. It will be used to calculate candidate features which are used for ranking in the next step.
 
-### 5. Ranker
+### 5. Ranker {#ranker}
 
 We generate the following features for every candidate:
 
@@ -186,7 +186,7 @@ Four our example question, these are the scores of the three candidates from the
 1. `?0-P1376-Q219 (score=1.61)`
 1. `Q390361-P1376-?0 (score=1.5)`
 
-### 6. Candidate executor
+### 6. Candidate executor {#candidate-executor}
 
 We translate our candidates to full SPARQL queries and send them to the QLever backend in order to get the actual answer to the question. In case the result is a Wikidata entity, we also query its english label.
 
@@ -227,7 +227,7 @@ Since the dataset contains both the gold SPARQL queries and the gold answers, we
 
 Because of the mentioned problems with the queries using the TRE pattern in the dataset, we decided to only use the ERT subset of the dataset.
 
-### Evaluation results
+### Evaluation results {#evaluation-results}
 
 The [described pipeline](#pipeline) achieves an average F1 score of 0.31 on the dataset. For comparison, a ranker using a random scoring function achieves an average F1 score of 0.01. These are the two results compared:
 

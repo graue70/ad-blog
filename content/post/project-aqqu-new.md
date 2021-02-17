@@ -26,7 +26,9 @@ Aqqu translates a given question into a SPARQL query and uses a SPARQL backend t
 
 ## Introduction {#introduction}
 
-While the original Aqqu as first published in [this paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) still accomplishes impressive results, it has several drawbacks:
+[Aqqu](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) is a program which answers questions. It does that by mapping a given question to the SPARQL query which gets the correct answer from the knowledge base called [Freebase](https://en.wikipedia.org/wiki/Freebase_(database)).
+
+While the original Aqqu still accomplishes impressive results, it has several drawbacks:
 
 1. Its logic relies heavily on data from Freebase which has not been updated for more than four years. (It was shut down on 2 May 2016.)
 1. The program relies on several external data sources like the [Clueweb dataset](http://lemurproject.org/clueweb09.php/) and the [Google News dataset](https://code.google.com/archive/p/word2vec/), which require manual updating or make running the program on a new machine harder.

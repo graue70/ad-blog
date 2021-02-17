@@ -34,7 +34,9 @@ While the original Aqqu as first published in [this paper](https://ad-publicatio
 
 These drawbacks led to this project, namely rewriting the entire program and basing it on Freebase's successor [Wikidata](https://www.wikidata.org/) instead.
 
-Note that even though it is indeed a rewrite, major parts of the logic and some parts of the implementation were taken directly from the original Aqqu version which was developed mostly by Elmar Haussmann and later improved by Niklas Schnelle. Having read the original [Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) helps in understanding this version.
+Note that even though it is indeed a rewrite, major parts of the logic and some parts of the implementation were taken directly from the original Aqqu version[^1]. Having read the original [Aqqu paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) helps in understanding this version.
+
+[^1]: Note that the Aqqu version first published in the mentioned [paper](https://ad-publications.cs.uni-freiburg.de/CIKM_freebase_qa_BH_2015.pdf) was later improved by Niklas Schnelle. We used the improved version as a base for this project.
 
 ## Requirements {#requirements}
 

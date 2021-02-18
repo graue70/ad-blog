@@ -5,7 +5,7 @@ author: "Thomas Goette"
 authorAvatar: "img/project_aqqu-wikidata/avatar.png"
 tags: [NLP, question answering, qa, knowledge base, NER, SPARQL, QLever, Aqqu]
 categories: [project]
-image: "img/writing.jpg"
+image: "img/project_aqqu-wikidata/title.svg"
 draft: true
 ---
 

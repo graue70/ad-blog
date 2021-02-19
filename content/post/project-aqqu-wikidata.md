@@ -6,7 +6,7 @@ authorAvatar: "img/project_aqqu-wikidata/avatar.png"
 tags: [NLP, question answering, qa, knowledge base, NER, SPARQL, QLever, Aqqu]
 categories: [project]
 image: "img/project_aqqu-wikidata/title.svg"
-draft: true
+draft: false
 ---
 
 Aqqu translates a given question into a SPARQL query and executes it on a knowledge base to get the answer to the question. While the original Aqqu uses Freebase and some additional external sources, this new version uses nothing but Wikidata.
